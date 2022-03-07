@@ -82,7 +82,7 @@ void *PartialSum(void *ti_array) {
     l = (int)ti -> length;
     for(i = 0; i < l; i++)
     {
-        result += tab[i];
+        result += sqrt(tab[i]);
     }
     pthread_mutex_lock(&mutex_sum);
     sum = sum + result;
@@ -129,7 +129,7 @@ void rnormPar (float *U, int n, int nb_threads, int mode) {
 
 int main(){
     // Initialize U
-    int n = 1024;
+    int n = 1024*256;
     int i;
     float U[n];
     for (i = 0; i < n; i++){
