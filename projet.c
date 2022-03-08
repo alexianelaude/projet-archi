@@ -9,7 +9,7 @@
 #include <math.h>
 #include <pthread.h>
 #include <stdlib.h>
-#include <emmintrin.h>
+#include <immintrin.h>
 #include <sys/time.h>
 
 pthread_mutex_t mutex_sum;
@@ -44,8 +44,9 @@ double rnorm(float *U, int n) {
     return res;
 }
 
-/*
+
 double vect_rnorm (float *U, int n) {
+    // TODO: compute sqrt in double precision + more efficient sum ?
     int i;
     int j = n % 4;
     // We fill U with zeros to have n % 4 == 0
@@ -54,21 +55,16 @@ double vect_rnorm (float *U, int n) {
     }
     n += j;
     double res = 0;
-    double* res_vec;
+    float* res_vec;
     int nb_iters = n / 4;
-    __m128 *ptr = (__m128*)U;
-    for(i = 0; i < nb_iters; i++, ptr++, U += 4) {
-        _mm_store_ps(U, _mm_sqrt_ps(*ptr));
-    }
-    for (i = 0; i < nb_iters; i ++){
-        ptr[i] = _mm_add_ps(ptr[i],ptr[i]);
-        ptr[i] = _mm_add_ps(ptr[i],ptr[i]);
-        res_vec = (double*) &ptr[i];
-        printf("Sum result is %e \n", res_vec[0]);
-        res += res_vec[0];
+    __m128* ptr = (__m128*)U;
+    for(i = 0; i < nb_iters; i++) {
+        ptr[i] = _mm_sqrt_ps(ptr[i]);
+        res_vec = (float*) &ptr[i];
+        res = res + (double) res_vec[0] + (double) res_vec[1] + (double) res_vec[2] + (double) res_vec[3];
     }
     return res;
-} */
+}
 
 void *PartialSum(void *ti_array) {
     int i, l;
@@ -150,12 +146,18 @@ int main(){
     rnormPar(U,n, NB_THREADS, 0);
     res_par = sum;
     time_par = now() - time_par;
-        
+    
+    //Vectorial
+    time_vec = now();
+    res_vec = vect_rnorm(U,n);
+    time_vec = now() - time_vec;
+    
     //Accelerations
-    //acc_vec = time_ref / time_vec;
+    acc_vec = time_ref / time_vec;
     acc_par = time_ref / time_par;
     //acc_vec_par = time_ref / time_vec_par;
-    printf("VALEURS\nSéquentiel (scalaire: %e) Parallèle (nb_threads: %d, scalaire: %e) \n", res_ref, NB_THREADS, res_par);
-    printf("TEMPS D'EXECUTION\nSéquentiel (scalaire: %e) Parallèle (nb_threads: %d, scalaire: %e) \n", time_ref, NB_THREADS, time_par);
-    printf("Accélération (multithread: %e)", acc_par);
+    
+    printf("VALEURS\nSéquentiel (scalaire: %e, vectoriel: %e) Parallèle (nb_threads: %d, scalaire: %e) \n", res_ref, res_vec, NB_THREADS, res_par);
+    printf("TEMPS D'EXECUTION\nSéquentiel (scalaire: %e, vectoriel: %e) Parallèle (nb_threads: %d, scalaire: %e) \n", time_ref, time_vec, NB_THREADS, time_par);
+    printf("Accélération (vectoriel: %e, multithread: %e)", acc_vec, acc_par);
 }
