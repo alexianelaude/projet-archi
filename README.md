@@ -1,4 +1,5 @@
-Project of Mines Paris' course 'Architecture materiel et logiciel'
+Project of Mines Paris' course 
+"Architecture materiel et logiciel des ordinateurs"
 ==============================
 
 **Authors**: Alexiane Laude, Arthur Pignet
@@ -14,13 +15,21 @@ for a vector $U$ of $n$ real numbers (single precision).
 Project compilation
 ------------
 
-To compile the project using gcc run:
+To compile the project using gcc, clone this repository
 
 ```bash
-gcc  -lpthread -mavx2 -O3 -o project projet2.c 
+git clone https://github.com/alexianelaude/projet-archi.git
+cd projet-archi
+```
+
+and then run:
+
+```bash
+gcc  -lpthread -mavx2 -O3 -o project project2.c 
 ```
  
-and then execute `project.exe`
+You can finally execute `project.exe`
+
 
 Result example
 ---------------
