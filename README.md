@@ -25,7 +25,7 @@ cd projet-archi
 and then run:
 
 ```bash
-gcc  -lpthread -mavx2 -O3 -o project project2.c 
+gcc  -lpthread -mavx2 -O3 -o project project.c 
 ```
  
 You can finally execute `project.exe`
