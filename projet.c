@@ -12,9 +12,10 @@
 #include <immintrin.h>
 #include <sys/time.h>
 
+#define NB_THREADS 8
+
 pthread_mutex_t mutex_sum;
 double sum = 0;
-int NB_THREADS = 4;
 
 float rand_0_1(void)
 {
@@ -124,10 +125,16 @@ void rnormPar (float *U, int n, int nb_threads, int mode) {
 }
 
 int main(){
+    printf("hello world\n");
     // Initialize U
-    int n = 1024*256;
+    int n = 1024*1024;
     int i;
-    float U[n];
+    float *U = (float*) malloc(n * sizeof(float));
+    if(U == NULL) {
+    printf("Error! memory not allocated.");
+    exit(0);
+    }
+    
     for (i = 0; i < n; i++){
         U[i] = rand_0_1();
     }
@@ -140,24 +147,28 @@ int main(){
     time_ref = now();
     res_ref = rnorm(U,n);
     time_ref = now() - time_ref;
-    
+    printf("piche1\n");
     //Parallel scalar
     time_par = now();
     rnormPar(U,n, NB_THREADS, 0);
     res_par = sum;
     time_par = now() - time_par;
-    
+    printf("piche2\n");
+
     //Vectorial
     time_vec = now();
     res_vec = vect_rnorm(U,n);
     time_vec = now() - time_vec;
-    
+    printf("piche3\n");
+
     //Accelerations
     acc_vec = time_ref / time_vec;
     acc_par = time_ref / time_par;
     //acc_vec_par = time_ref / time_vec_par;
     
-    printf("VALEURS\nSéquentiel (scalaire: %e, vectoriel: %e) Parallèle (nb_threads: %d, scalaire: %e) \n", res_ref, res_vec, NB_THREADS, res_par);
-    printf("TEMPS D'EXECUTION\nSéquentiel (scalaire: %e, vectoriel: %e) Parallèle (nb_threads: %d, scalaire: %e) \n", time_ref, time_vec, NB_THREADS, time_par);
-    printf("Accélération (vectoriel: %e, multithread: %e)", acc_vec, acc_par);
+    printf("VALEURS\nSequentiel (scalaire: %2.e, vectoriel: %2.e) Parallele (nb_threads: %d, scalaire: %2.e) \n", res_ref, res_vec, NB_THREADS, res_par);
+    printf("TEMPS D'EXECUTION\nSequentiel (scalaire: %2e, vectoriel: %2e) Parallele (nb_threads: %d, scalaire: %e) \n", time_ref, time_vec, NB_THREADS, time_par);
+    printf("Acceleration (vectoriel: %e, multithread: %e)\n", acc_vec, acc_par);
+    free(U);
+    fflush(stdout);
 }
